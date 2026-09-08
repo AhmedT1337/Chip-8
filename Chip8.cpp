@@ -300,22 +300,17 @@ void Chip8::OP_Dxyn()
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     uint8_t Vy = (opcode & 0x00F0u) >> 4u;
     uint8_t height = opcode & 0x000Fu;
-
-    // البداية مع التفاف الإحداثيات الأساسية
     uint8_t xPos = registers[Vx] % 64;
     uint8_t yPos = registers[Vy] % 32;
 
-    registers[0xF] = 0; // إرجاع سجل التصادم للصفر
-
+    registers[0xF] = 0; 
     for (unsigned int row = 0; row < height; ++row) 
     {
-        // حماية: منع قراءة الذاكرة إذا تجاوزت الـ 4096 بايت
-        if ((index + row) >= 4096) break;
+		if ((index + row) >= 4096) break;
 
         uint8_t spriteByte = memory[index + row];
-
-        // حماية Clipping: لو الصف خرج تحت الشاشة نوقف الرسم
-        if ((yPos + row) >= 32) break;
+	
+		if ((yPos + row) >= 32) break;
 
         for (unsigned int col = 0; col < 8; ++col) 
         {
@@ -323,19 +318,15 @@ void Chip8::OP_Dxyn()
 
             if (spritePixel) 
             {
-                // حماية Clipping: لو العمود خرج يمين الشاشة نتخطاه
-                if ((xPos + col) >= 64) break;
+				if ((xPos + col) >= 64) break;
 
-                // حساب المؤشر بعد الضمان بأنه داخل حدود المصفوفة (0 إلى 2047)
-                unsigned int screenIndex = (yPos + row) * 64 + (xPos + col);
+				unsigned int screenIndex = (yPos + row) * 64 + (xPos + col);
 
-                // فحص التصادم (Collision)
                 if (video[screenIndex] == 0xFFFFFFFF) 
                 {
                     registers[0xF] = 1;
                 }
 
-                // رسم البكسل (XOR)
                 video[screenIndex] ^= 0xFFFFFFFF;
             }
         }
